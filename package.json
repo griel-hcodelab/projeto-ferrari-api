@@ -21,12 +21,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:update": "prisma db pull && prisma generate",
     "migrate:create": "typeorm migration:create",
-
-
     "migrate:up": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run",
     "postmigrate:up": "npm run prisma:update",
-
-    
     "migrate:down": "ts-node --transpile-only ./node_modules/typeorm/cli.js migration:revert",
     "postmigrate:down": "npm run prisma:update"
   },
@@ -35,6 +31,8 @@
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@prisma/client": "^3.8.1",
+    "bcrypt": "^5.0.1",
+    "date-fns": "^2.28.0",
     "mysql2": "^2.3.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
