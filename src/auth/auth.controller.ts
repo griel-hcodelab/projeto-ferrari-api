@@ -84,4 +84,25 @@ export class AuthController
 
     }
 
+    @UseGuards(AuthGuard)
+    @Put('password')
+    async password(
+        @Body('currentPassword') currentPassword,
+        @Body('newPassword') newPassword,
+        @User('id') id
+        )
+    {
+
+        return this.userService.changePassword(id, currentPassword, newPassword)
+
+    }
+
+    @Post('forget')
+    async forget(@Body('email') email)
+    {
+
+        return this.authService.recovery(email);
+
+    }
+
 }
