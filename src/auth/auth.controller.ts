@@ -1,8 +1,10 @@
-import { BadRequestException, Body, Controller, Get, Headers, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Headers, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import {parse} from 'date-fns';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
+import { Auth } from './auth.decorator';
+import { User } from 'src/user/user.decorator';
 
 @Controller('auth')
 export class AuthController
@@ -59,11 +61,26 @@ export class AuthController
 
     @UseGuards(AuthGuard)
     @Get('me')
-    async me(){
+    async me(@Auth() auth, @User() user){
+
+        
 
         return {
-            sucess: true
+            auth, user
         }
+
+    }
+
+    @UseGuards(AuthGuard)
+    @Put('profile')
+    async profile(@User() user, @Body() body)
+    {
+
+        if (body.birthAt) {
+            body.birthAt = parse(body.birthAt, 'yyyy-MM-dd', new Date());
+        }
+
+        return this.userService.update(user.id, body)
 
     }
 
