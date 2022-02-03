@@ -1,5 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class MailService {
@@ -27,13 +27,19 @@ export class MailService {
         }
     ) {
 
-        return this.mailerService.sendMail({
-            to,
-            from,
-            subject,
-            template,
-            context: data
-        });
+        try {
+
+            return this.mailerService.sendMail({
+                to,
+                from,
+                subject,
+                template,
+                context: data
+            });
+
+        } catch(e) {
+            throw new BadRequestException(e.message);
+        }
         
     }
 
