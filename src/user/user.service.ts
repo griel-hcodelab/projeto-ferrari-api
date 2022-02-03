@@ -7,12 +7,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 import { isThursday } from 'date-fns';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UserService {
 
 
-    constructor(private prisma: PrismaService)
+    constructor(private prisma: PrismaService, private mailService: MailService)
     {
 
     }
@@ -235,6 +236,16 @@ export class UserService {
         });
 
         delete userUpdated.password;
+
+        await this.mailService.send({
+            to: user.email,
+            subject: 'Senha Alterada com Sucesso',
+            from: 'miguel@griel.com.br',
+            template: 'reset-password-confirm',
+            data: {
+                name: userUpdated.person.name
+            }
+        });
 
         return userUpdated;
 

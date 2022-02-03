@@ -88,4 +88,54 @@ export class AuthService {
 
     }
 
+    async reset({
+        password,
+        token
+    }: {
+        password: string;
+        token: string;
+    })
+    {
+
+        if (!password) {
+            throw new BadRequestException('Password is required');
+        }
+
+        try {
+            
+            await this.jwtService.verify(token);
+            
+        } catch (e) {
+
+            throw new BadRequestException(e.message)
+            
+        }
+
+        const passwordRecovery = await this.prisma.passwordRecovery.findFirst({
+            where: {
+                token: token,
+                resetAt: null
+            }
+        });
+
+        if (!passwordRecovery) {
+            throw new BadRequestException('Token used');
+        }
+
+        await this.prisma.passwordRecovery.update({
+            where: {
+                id: passwordRecovery.id
+            },
+            data: {
+                resetAt: new Date()
+            }
+        });
+
+        return this.userService.updatePassword(passwordRecovery.userId, password);
+
+
+
+
+    }
+
 }
