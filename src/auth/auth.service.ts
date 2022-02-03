@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 
@@ -10,7 +11,8 @@ export class AuthService {
     constructor(
         private userService: UserService,
         private jwtService: JwtService,
-        private prisma: PrismaService
+        private prisma: PrismaService,
+        private mailService: MailService
         ) {}
 
     async getToken(userId: number)
@@ -53,7 +55,8 @@ export class AuthService {
 
     async recovery(email: string) {
         
-        const { id } = await this.userService.getByEmail(email);
+        const { id, person } = await this.userService.getByEmail(email);
+        const { name } = person;
 
         const token = await this.jwtService.sign({
             id
@@ -70,9 +73,16 @@ export class AuthService {
             }
         });
 
-        /**
-         * TODO: Send Email
-         */
+        await this.mailService.send({
+            to: email,
+            from: 'miguel@griel.com.br',
+            subject: "Esqueci a senha",
+            template: "forget",
+            data: {
+                name: name,
+                url: `https://ferrari-hcodelab.web.app/auth.html?token=${token}`
+            }
+        });
 
         return { success: true}
 
