@@ -1,13 +1,10 @@
-/*
-https://docs.nestjs.com/providers#services
-*/
-
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
-import { isThursday } from 'date-fns';
 import { MailService } from 'src/mail/mail.service';
+import { join } from 'path';
+import { existsSync, renameSync, unlinkSync } from 'fs';
 
 @Injectable()
 export class UserService {
@@ -143,13 +140,15 @@ export class UserService {
         email, 
         birthAt, 
         phone, 
-        document
+        document,
+        photo
     }:{
         name?: string; 
         email?: string; 
         birthAt?: Date; 
         phone?: string; 
         document?: string;
+        photo?: string;
     })
     {
 
@@ -175,9 +174,11 @@ export class UserService {
         if (document) {
             dataPerson.document = document;
         }
-
         if (email) {
             dataUser.email = email;
+        }
+        if (photo) {
+            dataUser.photo = photo;
         }
 
         const user = await this.get(id);
@@ -261,6 +262,72 @@ export class UserService {
 
         return this.updatePassword(id, newPassword);
 
+
+    }
+
+    getStoragePhotoPath(photo: string)
+    {
+
+        if (!photo) {
+            throw new BadRequestException('Photo is required');
+        }
+
+        return join(__dirname, '../', '../', '../', 'storage','photos',photo)
+
+    }
+
+    async removePhoto(userId: number)
+    {
+
+        const { photo } = await this.get(userId);
+
+        if (photo) {
+
+            const currentPhoto = this.getStoragePhotoPath(photo);
+
+            if (existsSync(currentPhoto)) {
+                unlinkSync(currentPhoto);
+            }
+
+        }
+
+        return this.update(userId, {
+            photo: null
+        });
+
+    }
+
+    async setPhoto(id: number, file: Express.Multer.File)
+    {
+
+        if (!['image/png', 'image/jpeg'].includes(file.mimetype)) {
+            throw new BadRequestException('File not allowed');
+        }
+
+        await this.removePhoto(id);
+
+        let ext = '';
+
+        switch (file.mimetype) {
+            case 'image/png':
+                ext = 'png';
+            break;
+
+            default:
+                ext = 'jpg';
+            break;
+        }
+
+        const photo = `${file.filename}.${ext}`;
+
+        const from = this.getStoragePhotoPath(file.filename);
+        const to = this.getStoragePhotoPath(photo);
+
+        renameSync(from, to);
+
+        await this.update(id, {
+            photo: photo
+        })
 
     }
 
