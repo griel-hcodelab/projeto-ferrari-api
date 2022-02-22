@@ -66,7 +66,7 @@ export class AuthService {
         }
         );
 
-        await this.prisma.passwordRecovery.create({
+        await this.prisma.passwordRecoveries.create({
             data: {
                 userId: id,
                 token: token
@@ -111,7 +111,7 @@ export class AuthService {
             
         }
 
-        const passwordRecovery = await this.prisma.passwordRecovery.findFirst({
+        const passwordRecovery = await this.prisma.passwordRecoveries.findFirst({
             where: {
                 token: token,
                 resetAt: null
@@ -122,7 +122,7 @@ export class AuthService {
             throw new BadRequestException('Token used');
         }
 
-        await this.prisma.passwordRecovery.update({
+        await this.prisma.passwordRecoveries.update({
             where: {
                 id: passwordRecovery.id
             },
