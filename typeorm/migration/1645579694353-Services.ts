@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner, Table} from "typeorm";
-import { columnId } from "./columns/columnId";
-import { createdAt } from "./columns/createdAt";
-import { updatedAt } from "./columns/updatedAt";
+import { columnId } from "../columns/columnId";
+import { createdAt } from "../columns/createdAt";
+import { updatedAt } from "../columns/updatedAt";
 
 export class Services1645579694353 implements MigrationInterface {
 
