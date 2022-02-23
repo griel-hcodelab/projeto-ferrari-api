@@ -1,3 +1,4 @@
+import { PaymentSituationModule } from './payment-situation/paymentsituation.module';
 import { AddressModule } from './address/address.module';
 import { TimeOptionModule } from './time-option/time-option.module';
 import { ContactModule } from './contact/contact.module';
@@ -11,6 +12,7 @@ import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
+    PaymentSituationModule,
     AddressModule,
     TimeOptionModule,
     ContactModule,
@@ -18,9 +20,8 @@ import { ServiceModule } from './service/service.module';
     UserModule,
     PrismaModule,
     AuthModule,
-    ServiceModule
-  ],
-  controllers:
+    ServiceModule,
+    PaymentSituationModule], controllers:
     [
       AppController
     ],
