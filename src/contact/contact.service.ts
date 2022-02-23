@@ -1,4 +1,4 @@
-import { Injectable,BadRequestException } from '@nestjs/common';
+import { Injectable,BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -8,6 +8,22 @@ export class ContactService
     constructor(private prisma: PrismaService)
     { 
         
+    }
+
+    async get(id: number)
+    {
+
+        id = Number(id);
+
+        if (isNaN(id)) {
+            throw new BadRequestException('Não existe esse comentário')
+        }
+
+        return this.prisma.contact.findUnique({
+            where: {
+                id
+            }
+        });
     }
 
 
@@ -24,7 +40,7 @@ export class ContactService
             throw new BadRequestException("A mensagem é obrigatório");
         }
 
-        let personId;
+        let personId: number;
 
         const user = await this.prisma.user.findUnique({
             where: {
@@ -38,13 +54,27 @@ export class ContactService
         if (user) {
             personId = Number(user.personId);
         } else {
-            const person = await this.prisma.person.create({
-                data: {
-                    name
+
+            const person = await this.prisma.contact.findFirst({
+                where: {
+                    email
                 }
             });
 
-            personId = Number(person.id);
+            if (person) {
+                personId = Number(person.personId);
+            } else {
+
+                const newPerson = await this.prisma.person.create({
+                    data: {
+                        name
+                    }
+                });
+
+                personId = Number(newPerson.id);
+
+            }
+            
         }
 
         return this.prisma.contact.create({
@@ -54,6 +84,44 @@ export class ContactService
                 message
             }
         })
+
+    }
+
+    async listAll()
+    {
+        return this.prisma.contact.findMany();
+    }
+    async list(email:string)
+    {
+        if (!email) {
+            throw new BadRequestException("O e-mail é obrigatório");
+        }
+
+        return this.prisma.contact.findMany({
+            where: {
+                email
+            }
+        });
+    }
+
+    async delete(id: number)
+    {
+
+        id = Number(id);
+
+        if (isNaN(id)) {
+            throw new BadRequestException("Não existe esse contato");
+        }
+        
+        if (!await this.get(id)) {
+            throw new NotFoundException("ID não existe");
+        }
+
+        return this.prisma.contact.delete({
+            where: {
+                id
+            }
+        });
 
     }
 }
