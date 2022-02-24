@@ -2,7 +2,9 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { User } from 'src/user/user.decorator';
 
 import { AddressService } from './address.service';
 
@@ -31,9 +33,7 @@ export class AddressController
         if (!data.zipcode) {
             throw new BadRequestException("O CEP é obrigatório");
         }
-        if (!data.personId) {
-            throw new BadRequestException("O usuário é obrigatório");
-        }
+
 
         return data;
     }
@@ -49,13 +49,14 @@ export class AddressController
         return this.addressService.readAll();
     }
 
+    @UseGuards(AuthGuard)
     @Post()
-    create(@Body() body)
+    create(@Body() body, @User() user)
     {
 
         const data = this.isValidData(body);
 
-        return this.addressService.create(data);
+        return this.addressService.create(data, user.personId);
 
     }
 

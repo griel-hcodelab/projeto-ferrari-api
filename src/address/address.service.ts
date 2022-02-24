@@ -62,10 +62,12 @@ export class AddressService
 
     }
 
-    async create(body)
+    async create(body, id: number)
     {
 
-        const { personId } = await this.getUser(body.personId);
+        //const { personId } = await this.getUser(body.personId);
+
+        const personId = Number(id);
 
         await this.db.address.create({
             data: {
