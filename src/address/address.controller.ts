@@ -2,11 +2,12 @@
 https://docs.nestjs.com/controllers#controllers
 */
 
-import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { User } from 'src/user/user.decorator';
 
 import { AddressService } from './address.service';
+import { UpdateAddressDto } from './dto/update-address.dto';
 
 @Controller("address")
 export class AddressController 
@@ -38,6 +39,20 @@ export class AddressController
         return data;
     }
 
+    @UseGuards(AuthGuard)
+    @Get()
+    async listAll()
+    {
+        return this.addressService.findAll();
+    }
+
+    @UseGuards(AuthGuard)
+    @Get(':id')
+    async listOne(@Param('id', ParseIntPipe) id)
+    {
+        return this.addressService.findOne(id);
+    }
+
     @Get(':id')
     readOne(@Param("id") id: string)
     {
@@ -47,6 +62,15 @@ export class AddressController
     readAll()
     {
         return this.addressService.readAll();
+    }
+
+    @UseGuards(AuthGuard)
+    @Get('my')
+    async listByPerson(
+        @User() user
+    )
+    {
+        return this.addressService.findByUser(user.personId)
     }
 
     @UseGuards(AuthGuard)
@@ -60,14 +84,17 @@ export class AddressController
 
     }
 
+    @UseGuards(AuthGuard)
     @Patch(':id')
-    update(@Body() body, @Param('id') id: string)
+    update(
+        @Body() data: UpdateAddressDto,
+        @Param('id', ParseIntPipe) id,
+        @User() userPersonId)
     {
-        const data = this.isValidData(body);
-
-        return this.addressService.update(data, id);
+        return this.addressService.update(id, data, userPersonId);
     }
 
+    @UseGuards(AuthGuard)
     @Delete(':id')
     destroy(@Param('id') id: string)
     {

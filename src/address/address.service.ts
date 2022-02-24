@@ -2,23 +2,32 @@
 https://docs.nestjs.com/providers#services
 */
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { isValidId } from 'utils/validation-id';
+import { UpdateAddressDto } from './dto/update-address.dto';
 
 @Injectable()
 export class AddressService
 {
     constructor(private db:PrismaService) { }
 
-    isValidId(id:string)
+    
+
+    async findAll()
     {
-        const verifyId = Number(id);
+        return this.db.address.findMany();
+    }
 
-        if (isNaN(verifyId) || verifyId < 0) {
-            throw new BadRequestException("O ID é inválido");
-        }
+    async findOne(id: number)
+    {
 
-        return verifyId;
+
+        return this.db.address.findUnique({
+            where: {
+                id: id
+            },
+        });
 
     }
 
@@ -27,7 +36,7 @@ export class AddressService
 
         const user = await this.db.user.findUnique({
             where: {
-                id: this.isValidId(id)
+                id: isValidId(id)
             }
         });
 
@@ -49,7 +58,7 @@ export class AddressService
 
         const address = await this.db.address.findUnique({
             where: {
-                id: this.isValidId(id)
+                id: isValidId(id)
             }
         });
 
@@ -60,6 +69,15 @@ export class AddressService
         return address;   
          
 
+    }
+
+    async findByUser(userId: number)
+    {
+        return this.db.address.findMany({
+            where: {
+                personId: isValidId(userId)
+            }
+        });
     }
 
     async create(body, id: number)
@@ -84,30 +102,46 @@ export class AddressService
         });
     }
 
-    async update(body, addressId: string)
+    async update(id: number, data: UpdateAddressDto, personId /*, addressId: string*/)
     {
-        const { personId } = await this.getUser(body.personId);
 
-        const { id } = await this.readOne(addressId);
+        personId = isValidId(personId);
 
-        const address = await this.db.address.update({
+        const address = await this.findOne(personId);
+
+        if (address.personId !== personId) {
+            throw new BadRequestException("Operação inválida")
+        }
+
+        return this.db.address.update({
+            data: data,
             where: {
-                id: Number(id)
-            },
-            data : {
-                street: body.street,
-                number: body.number,
-                complement: body.complement,
-                district: body.district,
-                city: body.city,
-                state: body.state,
-                country: body.country,
-                zipcode: body.zipcode,
-                personId
+                id: isValidId(id)
             }
         });
 
-        return address;
+        // const { personId } = await this.getUser(body.personId);
+
+        // const { id } = await this.readOne(addressId);
+
+        // const address = await this.db.address.update({
+        //     where: {
+        //         id: Number(id)
+        //     },
+        //     data : {
+        //         street: body.street,
+        //         number: body.number,
+        //         complement: body.complement,
+        //         district: body.district,
+        //         city: body.city,
+        //         state: body.state,
+        //         country: body.country,
+        //         zipcode: body.zipcode,
+        //         personId
+        //     }
+        // });
+
+        // return address;
 
     }
 
