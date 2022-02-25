@@ -2,15 +2,17 @@
 https://docs.nestjs.com/providers#services
 */
 
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { lastValueFrom } from 'rxjs';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { isValidId } from 'utils/validation-id';
+import { isValidNumber } from 'utils/validation-number';
 import { UpdateAddressDto } from './dto/update-address.dto';
 
 @Injectable()
 export class AddressService
 {
-    constructor(private db:PrismaService) { }
+    constructor(private db:PrismaService, private httpService: HttpService) { }
 
     
 
@@ -36,7 +38,7 @@ export class AddressService
 
         const user = await this.db.user.findUnique({
             where: {
-                id: isValidId(id)
+                id: isValidNumber(id)
             }
         });
 
@@ -58,7 +60,7 @@ export class AddressService
 
         const address = await this.db.address.findUnique({
             where: {
-                id: isValidId(id)
+                id: isValidNumber(id)
             }
         });
 
@@ -75,7 +77,7 @@ export class AddressService
     {
         return this.db.address.findMany({
             where: {
-                personId: isValidId(userId)
+                personId: isValidNumber(userId)
             }
         });
     }
@@ -105,7 +107,7 @@ export class AddressService
     async update(id: number, data: UpdateAddressDto, personId /*, addressId: string*/)
     {
 
-        personId = isValidId(personId);
+        personId = isValidNumber(personId);
 
         const address = await this.findOne(personId);
 
@@ -116,7 +118,7 @@ export class AddressService
         return this.db.address.update({
             data: data,
             where: {
-                id: isValidId(id)
+                id: isValidNumber(id)
             }
         });
 
@@ -154,5 +156,19 @@ export class AddressService
                 id: Number(id)
             }
         })
+    }
+
+    async searchCep(cep: string)
+    {
+
+        cep = cep.replace(/[^\d]+/g,'').substring(0,8);
+
+        //Lastvaluefrom trás o ultimo resultado de uma promisse, é um observavle
+        const response = await lastValueFrom(this.httpService.request({
+            method: 'GET',
+            url: `https://viacep.com.br/ws/${cep}/json/`
+        }));
+
+        return response.data;
     }
 }

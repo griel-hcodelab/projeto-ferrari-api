@@ -1,5 +1,5 @@
-import { AddressService } from './address.service';
-import { AddressController } from './address.controller';
+import { ScheduleController } from './schedule.controller';
+import { ScheduleService } from './schedule.service';
 /*
 https://docs.nestjs.com/modules
 */
@@ -9,7 +9,6 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from 'src/user/user.module';
 import { AuthModule } from 'src/auth/auth.module';
-import { HttpModule } from '@nestjs/axios';
 
 @Module({
     imports: [
@@ -23,13 +22,11 @@ import { HttpModule } from '@nestjs/axios';
             })
         }),
         UserModule,
-        AuthModule,
-        HttpModule
+        AuthModule
     ],
     controllers: [
-        AddressController,],
+        ScheduleController,],
     providers: [
-        AddressService,
-    ],
+        ScheduleService,],
 })
-export class AddressModule { }
+export class ScheduleModule { }

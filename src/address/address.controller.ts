@@ -102,4 +102,11 @@ export class AddressController
     }
 
 
+    @Get('/cep/:cep')
+    async getCep(@Param('cep') cep: string)
+    {
+        return this.addressService.searchCep(cep);
+    }
+
+
 }
