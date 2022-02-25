@@ -30,7 +30,7 @@ export class Schedules1645748649665 implements MigrationInterface {
                 },
                 {
                     name: "scheduleAt",
-                    type: "DATE"
+                    type: "datetime"
                 },
                 {
                     name: "total",

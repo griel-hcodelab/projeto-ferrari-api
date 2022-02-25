@@ -23,7 +23,7 @@ model Person {
   updatedAt DateTime   @default(now()) @db.DateTime(0)
   Address   Address[]  @relation("addressesTopersons")
   Contact   Contact[]  @relation("contactsTopersons")
-  Schedule  Schedule[] @relation("personsToschedules")
+  schedules Schedule[] @relation("personsToschedules")
   User      User[]
 
   @@map("persons")
@@ -76,7 +76,7 @@ model TimeOptions {
   time      DateTime   @db.Time(0)
   createdAt DateTime   @default(now()) @db.DateTime(0)
   updatedAt DateTime   @default(now()) @db.DateTime(0)
-  Schedule  Schedule[] @relation("schedulesTotime_options")
+  schedules Schedule[] @relation("schedulesTotime_options")
 
   @@map("time_options")
 }
@@ -95,7 +95,7 @@ model Address {
   createdAt  DateTime   @default(now()) @db.DateTime(0)
   updatedAt  DateTime   @default(now()) @db.DateTime(0)
   Person     Person     @relation("addressesTopersons", fields: [personId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_addresses_people")
-  Schedule   Schedule[] @relation("addressesToschedules")
+  schedules  Schedule[] @relation("addressesToschedules")
 
   @@index([personId], map: "FK_addresses_people")
   @@map("addresses")
@@ -118,7 +118,7 @@ model PaymentSituation {
   name      String     @db.VarChar(45)
   createdAt DateTime   @default(now()) @db.DateTime(0)
   updatedAt DateTime   @default(now()) @db.DateTime(0)
-  Schedule  Schedule[]
+  schedules Schedule[] @relation("payment_situationsToschedules")
 
   @@map("payment_situations")
 }
@@ -129,13 +129,13 @@ model Schedule {
   timeOptionId       Int
   paymentSituationId Int
   billingAddressId   Int
-  scheduleAt         DateTime            @db.Date
+  scheduleAt         DateTime            @db.DateTime(0)
   total              Decimal             @db.Decimal(10, 2)
   installments       Int                 @default(1) @db.TinyInt
   createdAt          DateTime            @default(now()) @db.DateTime(0)
   updatedAt          DateTime            @default(now()) @db.DateTime(0)
   addresses          Address             @relation("addressesToschedules", fields: [billingAddressId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_schedules_addresses")
-  PaymentSituation   PaymentSituation    @relation(fields: [paymentSituationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_schedules_payment_situations")
+  payment_situations PaymentSituation    @relation("payment_situationsToschedules", fields: [paymentSituationId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_schedules_payment_situations")
   persons            Person              @relation("personsToschedules", fields: [personId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_schedules_persons")
   time_options       TimeOptions         @relation("schedulesTotime_options", fields: [timeOptionId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_schedules_time_options")
   ScheduleService  ScheduleService[] @relation("schedule_servicesToschedules")
