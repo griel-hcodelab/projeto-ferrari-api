@@ -2,11 +2,12 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { PrismaService } from 'src/prisma/prisma.service';
 import { isValidNumber } from 'utils/validation-number';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
+import { ScheduleGateway } from './schedule.gateway';
 
 @Injectable()
 export class ScheduleService {
 
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService, private socket: ScheduleGateway) {}
 
     async isValidPerson(id, personId)
     {
@@ -118,6 +119,8 @@ export class ScheduleService {
             });
 
         }
+
+        this.socket.created(schedule);
 
         return schedule;
 

@@ -27,6 +27,7 @@ import { PaymentSituationModule } from './payment-situation/payment-situation.mo
     [
       AppController
     ],
-  providers: [],
+  providers: [
+    ],
 })
 export class AppModule { }
