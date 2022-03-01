@@ -1,3 +1,4 @@
+import { PaymentModule } from './payment/payment.module';
 import { ScheduleModule } from './schedule/schedule.module';
 import { AddressModule } from './address/address.module';
 import { TimeOptionModule } from './time-option/time-option.module';
@@ -13,6 +14,7 @@ import { PaymentSituationModule } from './payment-situation/payment-situation.mo
 
 @Module({
   imports: [
+    PaymentModule,
     ScheduleModule,
     PaymentSituationModule,
     AddressModule,
@@ -28,6 +30,6 @@ import { PaymentSituationModule } from './payment-situation/payment-situation.mo
       AppController
     ],
   providers: [
-    ],
+  ],
 })
 export class AppModule { }
