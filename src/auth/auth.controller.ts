@@ -42,7 +42,8 @@ export class AuthController {
 
     @Post('register')
     async register(@Body() body) {
-        const { name, email, birthAt, phone, document, password } = body;
+        const { name, email, phone, document, password } = body;
+        let { birthAt } = body;
 
         if (birthAt) {
             try {
