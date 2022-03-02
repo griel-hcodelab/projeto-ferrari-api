@@ -12,20 +12,16 @@ import { MailModule } from 'src/mail/mail.module';
         PrismaModule,
         UserModule,
         JwtModule.registerAsync({
-            useFactory: ()=>({
+            useFactory: () => ({
                 secret: process.env.JWT_SECRET,
                 signOptions: {
-                    expiresIn: process.env.JWT_EXPIRE
-                }
-            })
-        })
+                    expiresIn: process.env.JWT_EXPIRE,
+                },
+            }),
+        }),
     ],
-    controllers: [
-        AuthController,],
-    providers: [
-        AuthService,],
-    exports: [
-        AuthService
-    ]
+    controllers: [AuthController],
+    providers: [AuthService],
+    exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

@@ -15,20 +15,17 @@ import { ScheduleGateway } from './schedule.gateway';
     imports: [
         PrismaModule,
         JwtModule.registerAsync({
-            useFactory: ()=>({
+            useFactory: () => ({
                 secret: process.env.JWT_SECRET,
                 signOptions: {
-                    expiresIn: process.env.JWT_EXPIRE
-                }
-            })
+                    expiresIn: process.env.JWT_EXPIRE,
+                },
+            }),
         }),
         UserModule,
-        AuthModule
+        AuthModule,
     ],
-    controllers: [
-        ScheduleController,],
-    providers: [
-        ScheduleService,
-        ScheduleGateway],
+    controllers: [ScheduleController],
+    providers: [ScheduleService, ScheduleGateway],
 })
-export class ScheduleModule { }
+export class ScheduleModule {}

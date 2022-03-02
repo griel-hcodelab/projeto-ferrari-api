@@ -1,11 +1,15 @@
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer} from '@nestjs/websockets';
+import {
+    MessageBody,
+    SubscribeMessage,
+    WebSocketGateway,
+    WebSocketServer,
+} from '@nestjs/websockets';
 import { Schedule } from '@prisma/client';
 
 @WebSocketGateway({
-    cors: true
+    cors: true,
 })
 export class ScheduleGateway {
-
     @WebSocketServer()
     server: any;
 
@@ -13,5 +17,4 @@ export class ScheduleGateway {
     created(@MessageBody() data: Schedule) {
         this.server.emit('schedule', data);
     }
-
 }

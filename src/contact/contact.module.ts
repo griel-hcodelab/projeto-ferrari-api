@@ -4,14 +4,8 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-    imports: [
-        PrismaModule
-    ],
-    controllers: [
-        ContactController,
-    ],
-    providers: [
-        ContactService,
-    ],
+    imports: [PrismaModule],
+    controllers: [ContactController],
+    providers: [ContactService],
 })
-export class ContactModule { }
+export class ContactModule {}

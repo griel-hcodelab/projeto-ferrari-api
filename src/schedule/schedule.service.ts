@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { isValidNumber } from 'utils/validation-number';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
@@ -6,58 +10,55 @@ import { ScheduleGateway } from './schedule.gateway';
 
 @Injectable()
 export class ScheduleService {
+    constructor(
+        private prisma: PrismaService,
+        private socket: ScheduleGateway,
+    ) {}
 
-    constructor(private prisma: PrismaService, private socket: ScheduleGateway) {}
-
-    async isValidPerson(id, personId)
-    {
+    async isValidPerson(id, personId) {
         personId = isValidNumber(personId);
 
         const schedule = await this.findOne(isValidNumber(id));
 
         if (schedule.personId !== personId) {
-            throw new BadRequestException("Não é possível apagar")
+            throw new BadRequestException('Não é possível apagar');
         }
 
         return true;
     }
 
-    async findOne(id: number)
-    {
+    async findOne(id: number) {
         return this.prisma.schedule.findUnique({
             where: {
-                id: isValidNumber(id)
-            }
+                id: isValidNumber(id),
+            },
         });
     }
 
     async findAll() {
-
         return this.prisma.schedule.findMany();
-
     }
 
-    async findByPerson(id: number)
-    {
-
+    async findByPerson(id: number) {
         return this.prisma.schedule.findMany({
             where: {
-                personId: isValidNumber(id)
-            }
+                personId: isValidNumber(id),
+            },
         });
-
     }
 
-    async create(personId: number, {
-        timeOptionId,
-        billingAddressId,
-        paymentSituationId,
-        scheduleAt,
-        total,
-        installments,
-        services,
-    }: CreateScheduleDto) {
-
+    async create(
+        personId: number,
+        {
+            timeOptionId,
+            billingAddressId,
+            paymentSituationId,
+            scheduleAt,
+            total,
+            installments,
+            services,
+        }: CreateScheduleDto,
+    ) {
         scheduleAt = new Date(scheduleAt);
 
         timeOptionId = isValidNumber(timeOptionId);
@@ -65,32 +66,32 @@ export class ScheduleService {
 
         const timeOption = await this.prisma.timeOptions.findUnique({
             where: {
-                id: timeOptionId
-            }
+                id: timeOptionId,
+            },
         });
 
         if (!timeOption) {
-            throw new NotFoundException("Esse horário é inválido");
+            throw new NotFoundException('Esse horário é inválido');
         }
 
         const address = await this.prisma.address.findUnique({
             where: {
-                id: billingAddressId
-            }
+                id: billingAddressId,
+            },
         });
 
         if (!address) {
-            throw new NotFoundException("Esse endereço é inválido");
+            throw new NotFoundException('Esse endereço é inválido');
         }
 
         const currentScheduleAt = await this.prisma.schedule.findFirst({
             where: {
-                scheduleAt
-            }
+                scheduleAt,
+            },
         });
 
         if (currentScheduleAt) {
-            throw new BadRequestException("Esse horário não está disponível")
+            throw new BadRequestException('Esse horário não está disponível');
         }
 
         const schedule = await this.prisma.schedule.create({
@@ -106,35 +107,28 @@ export class ScheduleService {
         });
 
         if (schedule) {
-
-            services.split(",").forEach(async (item) => {
-
+            services.split(',').forEach(async (item) => {
                 await this.prisma.scheduleService.create({
                     data: {
                         scheduleId: schedule.id,
                         serviceId: +item,
-                    },     
+                    },
                 });
-
             });
-
         }
 
         this.socket.created(schedule);
 
         return schedule;
-
     }
 
-    async destroy(id: number, personId: number)
-    {
+    async destroy(id: number, personId: number) {
         await this.isValidPerson(id, personId);
 
         return this.prisma.schedule.delete({
             where: {
-                id: isValidNumber(id)
-            }
+                id: isValidNumber(id),
+            },
         });
     }
-
 }

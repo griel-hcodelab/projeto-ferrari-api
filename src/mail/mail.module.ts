@@ -7,35 +7,31 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 @Module({
     imports: [
         MailerModule.forRootAsync({
-            useFactory: async ()=>({
+            useFactory: async () => ({
                 transport: {
                     host: process.env.EMAIL_HOST,
                     port: Number(process.env.EMAIL_PORT),
                     secure: false,
                     auth: {
                         user: process.env.EMAIL_USER,
-                        pass: process.env.EMAIL_PASSWORD
-                    }
+                        pass: process.env.EMAIL_PASSWORD,
+                    },
                 },
                 defaults: {
-                    from: `Roberto <${process.env.MAIL_FROM}>`
+                    from: `Roberto <${process.env.MAIL_FROM}>`,
                 },
                 template: {
                     dir: resolve(__dirname, 'templates'),
                     adapter: new PugAdapter(),
                     options: {
-                        strict: true
-                    }
-                }
-            })
-        })
+                        strict: true,
+                    },
+                },
+            }),
+        }),
     ],
     controllers: [],
-    providers: [
-        MailService,
-    ],
-    exports: [
-        MailService
-    ]
+    providers: [MailService],
+    exports: [MailService],
 })
-export class MailModule { }
+export class MailModule {}

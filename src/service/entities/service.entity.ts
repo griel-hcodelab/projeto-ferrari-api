@@ -1,6 +1,5 @@
-export class Service
-{
+export class Service {
     name: string;
     description: string;
-    price: number
+    price: number;
 }

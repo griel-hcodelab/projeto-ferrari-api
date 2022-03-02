@@ -13,23 +13,20 @@ import { ServiceModule } from './service/service.module';
 import { PaymentSituationModule } from './payment-situation/payment-situation.module';
 
 @Module({
-  imports: [
-    PaymentModule,
-    ScheduleModule,
-    PaymentSituationModule,
-    AddressModule,
-    TimeOptionModule,
-    ContactModule,
-    MailModule,
-    UserModule,
-    PrismaModule,
-    AuthModule,
-    ServiceModule,
-  ], controllers:
-    [
-      AppController
+    imports: [
+        PaymentModule,
+        ScheduleModule,
+        PaymentSituationModule,
+        AddressModule,
+        TimeOptionModule,
+        ContactModule,
+        MailModule,
+        UserModule,
+        PrismaModule,
+        AuthModule,
+        ServiceModule,
     ],
-  providers: [
-  ],
+    controllers: [AppController],
+    providers: [],
 })
-export class AppModule { }
+export class AppModule {}

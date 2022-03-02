@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
@@ -8,16 +13,12 @@ import { createReadStream, existsSync, renameSync, unlinkSync } from 'fs';
 
 @Injectable()
 export class UserService {
+    constructor(
+        private prisma: PrismaService,
+        private mailService: MailService,
+    ) {}
 
-
-    constructor(private prisma: PrismaService, private mailService: MailService)
-    {
-
-    }
-
-    async get(id: number, hash = false)
-    {
-    
+    async get(id: number, hash = false) {
         id = Number(id);
 
         if (isNaN(id)) {
@@ -26,15 +27,15 @@ export class UserService {
 
         const user = await this.prisma.user.findUnique({
             where: {
-                id: id
+                id: id,
             },
             include: {
-                person: true
-            }
+                person: true,
+            },
         });
 
         if (!user) {
-            throw new NotFoundException('The user was not found.')
+            throw new NotFoundException('The user was not found.');
         }
 
         if (!hash) {
@@ -44,24 +45,22 @@ export class UserService {
         return user;
     }
 
-    async getByEmail(email: string)
-    {
-    
+    async getByEmail(email: string) {
         if (!email) {
             throw new BadRequestException('E-Mail is required.');
         }
 
         const user = await this.prisma.user.findUnique({
             where: {
-                email: email
+                email: email,
             },
             include: {
-                person: true
-            }
+                person: true,
+            },
         });
 
         if (!user) {
-            throw new NotFoundException('The user was not found.')
+            throw new NotFoundException('The user was not found.');
         }
 
         delete user.password;
@@ -70,88 +69,84 @@ export class UserService {
     }
 
     async create({
-        name, 
-        email, 
-        birthAt, 
-        phone, 
+        name,
+        email,
+        birthAt,
+        phone,
         document,
-        password
-    }:{
-        name: string; 
-        email: string; 
+        password,
+    }: {
+        name: string;
+        email: string;
         password: string;
-        birthAt?: Date; 
-        phone?: string; 
+        birthAt?: Date;
+        phone?: string;
         document?: string;
-    })
-    {
-
+    }) {
         if (!name) {
-            throw new BadRequestException('Name is required.')
+            throw new BadRequestException('Name is required.');
         }
         if (!email) {
-            throw new BadRequestException('Email is required.')
+            throw new BadRequestException('Email is required.');
         }
         if (!password) {
-            throw new BadRequestException('Password is required.')
+            throw new BadRequestException('Password is required.');
         }
         if (birthAt && birthAt.toString().toLowerCase() === 'invalid date') {
-            throw new BadRequestException('Birth date is invalid.')
+            throw new BadRequestException('Birth date is invalid.');
         }
 
         let user = null;
 
         try {
-            
             user = await this.getByEmail(email);
-            
-        } catch (error) {
-
-            
-        }
+        } catch (error) {}
 
         if (user) {
-            throw new BadRequestException('Email already exists')
+            throw new BadRequestException('Email already exists');
         }
 
         const userCreated = await this.prisma.user.create({
             data: {
                 person: {
                     create: {
-                        name, birthAt, document, phone
-                    }
+                        name,
+                        birthAt,
+                        document,
+                        phone,
+                    },
                 },
                 email,
-                password: bcrypt.hashSync(password, 10)
+                password: bcrypt.hashSync(password, 10),
             },
             include: {
-                person: true
-            }
+                person: true,
+            },
         });
 
         delete userCreated.password;
 
         return userCreated;
-
     }
 
-    async update(id: number, {
-        name, 
-        email, 
-        birthAt, 
-        phone, 
-        document,
-        photo
-    }:{
-        name?: string; 
-        email?: string; 
-        birthAt?: Date; 
-        phone?: string; 
-        document?: string;
-        photo?: string;
-    })
-    {
-
+    async update(
+        id: number,
+        {
+            name,
+            email,
+            birthAt,
+            phone,
+            document,
+            photo,
+        }: {
+            name?: string;
+            email?: string;
+            birthAt?: Date;
+            phone?: string;
+            document?: string;
+            photo?: string;
+        },
+    ) {
         id = Number(id);
 
         if (isNaN(id)) {
@@ -188,7 +183,7 @@ export class UserService {
                 where: {
                     id: user.personId,
                 },
-                data: dataPerson
+                data: dataPerson,
             });
         }
 
@@ -197,43 +192,38 @@ export class UserService {
                 where: {
                     id,
                 },
-                data: dataUser
+                data: dataUser,
             });
         }
 
         return this.get(id);
-
     }
 
-    async checkPassword(userId: number, password: string)
-    {
+    async checkPassword(userId: number, password: string) {
         const user = await this.get(userId, true);
 
         const checked = await bcrypt.compare(password, user.password);
 
         if (!checked) {
-            throw new UnauthorizedException("Email or password is incorrect");
+            throw new UnauthorizedException('Email or password is incorrect');
         }
 
         return true;
-
     }
 
-    async updatePassword(id: number, password: string)
-    {
-
+    async updatePassword(id: number, password: string) {
         const user = await this.get(id);
 
         const userUpdated = await this.prisma.user.update({
             where: {
-                id
+                id,
             },
             data: {
-                password: bcrypt.hashSync(password, 10)
+                password: bcrypt.hashSync(password, 10),
             },
             include: {
-                person: true
-            }
+                person: true,
+            },
         });
 
         delete userUpdated.password;
@@ -244,62 +234,52 @@ export class UserService {
             from: 'miguel@griel.com.br',
             template: 'reset-password-confirm',
             data: {
-                name: userUpdated.person.name
-            }
+                name: userUpdated.person.name,
+            },
         });
 
         return userUpdated;
-
     }
 
-    async changePassword(id: number, currentPassword: string, newPassword: string)
-    {
+    async changePassword(
+        id: number,
+        currentPassword: string,
+        newPassword: string,
+    ) {
         if (!newPassword) {
             throw new BadRequestException('New password is required');
         }
-        
+
         await this.checkPassword(id, currentPassword);
 
         return this.updatePassword(id, newPassword);
-
-
     }
 
-    getStoragePhotoPath(photo: string)
-    {
-
+    getStoragePhotoPath(photo: string) {
         if (!photo) {
             throw new BadRequestException('Photo is required');
         }
 
-        return join(__dirname, '../', '../', '../', 'storage','photos',photo)
-
+        return join(__dirname, '../', '../', '../', 'storage', 'photos', photo);
     }
 
-    async removePhoto(userId: number)
-    {
-
+    async removePhoto(userId: number) {
         const { photo } = await this.get(userId);
 
         if (photo) {
-
             const currentPhoto = this.getStoragePhotoPath(photo);
 
             if (existsSync(currentPhoto)) {
                 unlinkSync(currentPhoto);
             }
-
         }
 
         return this.update(userId, {
-            photo: null
+            photo: null,
         });
-
     }
 
-    async setPhoto(id: number, file: Express.Multer.File)
-    {
-
+    async setPhoto(id: number, file: Express.Multer.File) {
         if (!['image/png', 'image/jpeg'].includes(file.mimetype)) {
             throw new BadRequestException('File not allowed');
         }
@@ -311,11 +291,11 @@ export class UserService {
         switch (file.mimetype) {
             case 'image/png':
                 ext = 'png';
-            break;
+                break;
 
             default:
                 ext = 'jpg';
-            break;
+                break;
         }
 
         const photo = `${file.filename}.${ext}`;
@@ -326,22 +306,17 @@ export class UserService {
         renameSync(from, to);
 
         await this.update(id, {
-            photo: photo
-        })
-
+            photo: photo,
+        });
     }
 
-    async getPhoto(id: number)
-    {
-
+    async getPhoto(id: number) {
         const { photo } = await this.get(id);
 
         let filePath = this.getStoragePhotoPath('../no-photo.jpg');
 
         if (photo) {
-
             filePath = this.getStoragePhotoPath(photo);
-
         }
 
         const file = createReadStream(filePath);
@@ -350,12 +325,7 @@ export class UserService {
 
         return {
             file,
-            extension
-        }
-
-
-        
-
+            extension,
+        };
     }
-
 }

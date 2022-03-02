@@ -1,8 +1,6 @@
-import { IsNotEmpty } from "class-Validator";
+import { IsNotEmpty } from 'class-Validator';
 
-export class CreateScheduleDto
-{
-
+export class CreateScheduleDto {
     @IsNotEmpty()
     timeOptionId: number;
 
